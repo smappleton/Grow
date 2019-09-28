@@ -1,11 +1,13 @@
 let grid;
 let noisy = true;
 let noiseScale = 0.1;
-let size = 40;
+let size = 20;
 let cols;
 let rows;
 let humanCount = 1;
-let playerCount = 4;
+let playerCount = 3;
+let boardSeed = 3332233;
+let aiSeed = 31323;
 let players = new Array(playerCount);
 let scoreBoard = new Array(playerCount);
 let contestCount = new Array(playerCount);
@@ -118,7 +120,9 @@ function getAvailable() {
 
 
 function setup() {
-  createCanvas(1201, 701);
+  randomSeed(aiSeed);
+  noiseSeed(boardSeed);
+  createCanvas(windowWidth, windowHeight);
   background(0);
   frameRate(1);
   cols = floor(width / size);
