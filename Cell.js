@@ -94,6 +94,7 @@ class Cell {
       this.claimNeighbors();
       this._contested = false;
       this.show();
+      claimed(this.xIndex, this.yIndex);
     } else {
       //console.log("misclick!");
       currentPlayer--;

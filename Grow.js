@@ -1,19 +1,23 @@
+//TODO this should all probably be in its own object
 let grid;
 let noisy = true;
 let noiseScale = 0.1;
-let size = 20;
+let size = 25;
 let cols;
 let rows;
 let humanCount = 1;
-let playerCount = 3;
-let boardSeed = 3332233;
-let aiSeed = 31323;
+let playerCount = 2;
+let boardSeed = 0;
+let aiSeed = 0;
 let players = new Array(playerCount);
 let scoreBoard = new Array(playerCount);
 let contestCount = new Array(playerCount);
 let currentPlayer = 0;
 let gameOver = false;
 let obstacleCount = 0;
+//list of available cells by flat index, this is for searching in logn time
+let available = [];
+//TODO make a flat list of contested cells too
 
 function make2DArray(cols, rows) {
   let arr = new Array(cols);
@@ -24,6 +28,7 @@ function make2DArray(cols, rows) {
 }
 
 function mousePressed() {
+  //TODO this doesnt need a double for
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j< rows; j++) {
       if (grid[i][j].contains(mouseX, mouseY)) {
@@ -41,6 +46,7 @@ function grow() {
 
   //create a list of contests
   contests = [];
+  //TODO this doesn't need a double for either
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j< rows; j++) {
       thisCell = grid[i][j];
@@ -104,24 +110,64 @@ function getPlayer(givenColor) {
   return -1;
 }
 
-//returns the unowned cells
+//returns the available in flat indices
 function getAvailable() {
-  let ans = [];
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j< rows; j++) {
+  return available;
+}
+
+function buildAvailable(){
+  //create the sorted list of indices
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i< cols; i++) {
       thisCell = grid[i][j];
       if (!thisCell.owned) {
-        ans.push(thisCell);
+        let val = i + (j*cols);
+        available.push(val);
       }
     }
   }
+}
+
+//search sorted array for val, return index
+//-1 if the val isnt there
+function binarySearchArr(arr, val){
+  let ans = -1;
+  let low = 0;
+  let high = available.length-1;
+  while ((high-low) > 1){
+    let middle = floor((high+low)/2);
+    if (arr[middle] > val){
+       high = middle; 
+    } else{
+       low = middle; 
+    }
+  }
+  
+  if (arr[low] == val){
+     ans = low; 
+  }
+  if (arr[high] == val){
+     ans = high; 
+  }
+  //print("Search result -" + ans);
   return ans;
+}
+
+//removes a cell from the available list
+function claimed(x,y){
+  let val = x + (y*cols);
+  let index = binarySearchArr(available,val);
+  available.splice(index,1);
 }
 
 
 function setup() {
-  randomSeed(aiSeed);
-  noiseSeed(boardSeed);
+  if (aiSeed != 0){
+    randomSeed(aiSeed);
+  }
+  if (boardSeed != 0){
+    noiseSeed(boardSeed);
+  }
   createCanvas(windowWidth, windowHeight);
   background(0);
   frameRate(1);
@@ -146,6 +192,8 @@ function setup() {
       }
     }
   }
+  
+  buildAvailable();
 }
 
 
