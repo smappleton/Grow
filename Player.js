@@ -1,12 +1,14 @@
 class Player {
-
-  constructor() {
+  
+  constructor(id, difficulty) {
     this.clr = color((255), 
       random(255), 
       random(255));
+    this.personality = id;
+    this.diff = difficulty;
   }
 
-  move() {
+  random_move() {
     let total = scoreBoard.reduce((a, b) => a+b, 0);
     if (total == ((cols*rows)-obstacleCount) || gameOver) {
       return;
@@ -21,5 +23,16 @@ class Player {
     if (currentPlayer == playerCount){
       grow();
     }
+  }
+  
+  move(){
+   switch(this.personality){
+      case AI.rando:
+      this.random_move();
+      break;
+      default:
+      print("Error in AI switch");
+      this.random_move();
+   }
   }
 }

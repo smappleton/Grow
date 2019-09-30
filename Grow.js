@@ -1,10 +1,25 @@
+//global enums
+const GROWPATTERN = {
+  diamond : 1,
+  square : 2,
+};
+
+const AI = {
+  rando : 1,
+  katie : 2,
+  gabe : 3,
+  clint : 4,
+  carla : 5,
+};
+
 //TODO this should all probably be in its own object
 let grid;
 let noisy = true;
 let noiseScale = 0.1;
-let size = 25;
 let cols;
 let rows;
+let size = 50;
+let frameSpeed= 1;
 let humanCount = 1;
 let playerCount = 2;
 let boardSeed = 0;
@@ -15,9 +30,16 @@ let contestCount = new Array(playerCount);
 let currentPlayer = 0;
 let gameOver = false;
 let obstacleCount = 0;
+
+let growthPattern = GROWPATTERN.diamond;
+
 //list of available cells by flat index, this is for searching in logn time
 let available = [];
 //TODO make a flat list of contested cells too
+
+
+
+//main functions
 
 function make2DArray(cols, rows) {
   let arr = new Array(cols);
@@ -170,14 +192,14 @@ function setup() {
   }
   createCanvas(windowWidth, windowHeight);
   background(0);
-  frameRate(1);
+  frameRate(frameSpeed);
   cols = floor(width / size);
   rows = floor(height / size);
   grid = make2DArray(cols, rows);
   noiseGrid = make2DArray(cols, rows);
 
   for (let i=0; i<players.length; i++) {
-    players[i] = new Player();
+    players[i] = new Player(AI.rando);
     scoreBoard[i] = 0;
   }
 
@@ -199,14 +221,14 @@ function setup() {
 
 function draw() {
   //call the AI
-  if (currentPlayer >= humanCount) {
+  if (currentPlayer >= humanCount && !gameOver) {
     players[currentPlayer].move();
   }
 
-  let total = scoreBoard.reduce((a, b) => a+b, 0);
-  if (total == ((cols*rows)-obstacleCount) && !gameOver) {
+  if (getAvailable().length == 0 && !gameOver) {
     console.log("GAME OVER");
     console.log("Final scores - " + scoreBoard);
+    console.log("Board size - " + cols*rows);
     gameOver = true;
   }
 }

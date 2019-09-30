@@ -53,15 +53,21 @@ class Cell {
   //use this to change growth patterns
   getNeighbors() {
     let neighbors = [];
-    for (let i = -1; i < 2; i++) {
-      for (let j = -1; j < 2; j++) {
-        let nearX = i+this.xIndex;
-        let nearY = j+this.yIndex;
-        if (nearX > -1 && nearX < cols && 
-          nearY > -1 && nearY < rows && abs(i)!=abs(j)) {
-          neighbors.push(grid[nearX][nearY]);
+    switch(growthPattern){
+      case GROWPATTERN.diamond: 
+      for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+          let nearX = i+this.xIndex;
+          let nearY = j+this.yIndex;
+          if (nearX > -1 && nearX < cols && 
+            nearY > -1 && nearY < rows && abs(i)!=abs(j)) {
+            neighbors.push(grid[nearX][nearY]);
+          }
         }
       }
+      break;
+      default:
+      print("Error in neighbors");
     }
     return neighbors;
   }
