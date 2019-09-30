@@ -18,8 +18,9 @@ let noisy = true;
 let noiseScale = 0.1;
 let cols;
 let rows;
-let size = 50;
-let frameSpeed= 1;
+let size = 20;
+let showGrid = false;
+let frameSpeed= 100;
 let humanCount = 1;
 let playerCount = 2;
 let boardSeed = 0;
@@ -30,6 +31,7 @@ let contestCount = new Array(playerCount);
 let currentPlayer = 0;
 let gameOver = false;
 let obstacleCount = 0;
+let playArea = 0;
 
 let growthPattern = GROWPATTERN.diamond;
 
@@ -120,7 +122,10 @@ function grow() {
 
   //start next turn
   currentPlayer = 0;
-  console.log(scoreBoard);
+  //raw scores
+  //console.log(scoreBoard);
+  //show coverage
+  console.log(scoreBoard.map((x) => round((x/playArea)*100) ));
 }
 
 function getPlayer(givenColor) {
@@ -148,6 +153,7 @@ function buildAvailable(){
       }
     }
   }
+  playArea = available.length;
 }
 
 //search sorted array for val, return index
@@ -182,6 +188,13 @@ function claimed(x,y){
   available.splice(index,1);
 }
 
+//takes final scores and calculates the winning margin
+function winningControl(scores){
+  let first = max(...scores);
+  return first/playArea;
+  
+}
+
 
 function setup() {
   if (aiSeed != 0){
@@ -198,11 +211,6 @@ function setup() {
   grid = make2DArray(cols, rows);
   noiseGrid = make2DArray(cols, rows);
 
-  for (let i=0; i<players.length; i++) {
-    players[i] = new Player(AI.rando);
-    scoreBoard[i] = 0;
-  }
-
   //add cells and add noise
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j< rows; j++) {
@@ -216,6 +224,11 @@ function setup() {
   }
   
   buildAvailable();
+  
+  for (let i=0; i<players.length; i++) {
+    players[i] = new Player(AI.rando);
+    scoreBoard[i] = 0;
+  }
 }
 
 
@@ -227,8 +240,9 @@ function draw() {
 
   if (getAvailable().length == 0 && !gameOver) {
     console.log("GAME OVER");
+    console.log("Board size - " + playArea);
     console.log("Final scores - " + scoreBoard);
-    console.log("Board size - " + cols*rows);
+    console.log("Final coverage% - " + scoreBoard.map((x) => round((x/playArea)*100) ));
     gameOver = true;
   }
 }

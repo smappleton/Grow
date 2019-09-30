@@ -23,20 +23,22 @@ class Cell {
   show() {
     if (this._obstacle) {
       fill(0);
+      strokeWeight(1);
+      let str = showGrid ? stroke(150) : stroke(0);
       rect(this.x, this.y, this.size, this.size);
-      strokeWeight(0.5);
-      stroke(150);
       //draw an x
-      line(this.x, this.y, this.x+this.size, this.y+this.size);
-      line(this.x+this.size, this.y, this.x, this.y+this.size);
-    } else if (!this._contested) {
       strokeWeight(0.5);
       stroke(150);
+      //line(this.x, this.y, this.x+this.size, this.y+this.size);
+      //line(this.x+this.size, this.y, this.x, this.y+this.size);
+    } else if (!this._contested) {
+      strokeWeight(1);
+      let str = showGrid ? stroke(150) : stroke(this.owner);
       fill(this.owner);
       rect(this.x, this.y, this.size, this.size);
     } else {
-      strokeWeight(0.5);
-      stroke(150);
+      strokeWeight(1);
+      let str = showGrid ? stroke(150) : stroke(this.owner);
       fill(this.owner);
       rect(this.x, this.y, this.size, this.size);
       fill(150);
