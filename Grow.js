@@ -5,6 +5,7 @@ const GROWPATTERN = {
 };
 
 const AI = {
+  human : 0,
   rando : 1,
   katie : 2,
   gabe : 3,
@@ -18,13 +19,14 @@ let noisy = true;
 let noiseScale = 0.1;
 let cols;
 let rows;
-let size = 20;
+let size = 5;
 let showGrid = false;
-let frameSpeed= 100;
-let humanCount = 1;
+let frameSpeed= 1000;
+let humanCount = 0;
 let playerCount = 2;
 let boardSeed = 0;
 let aiSeed = 0;
+let aiDiff = 2;
 let players = new Array(playerCount);
 let scoreBoard = new Array(playerCount);
 let contestCount = new Array(playerCount);
@@ -224,11 +226,17 @@ function setup() {
   }
   
   buildAvailable();
-  
-  for (let i=0; i<players.length; i++) {
-    players[i] = new Player(AI.rando);
+  //human players
+  for (let i=0; i<humanCount; i++){
+    players[i] = new Player(AI.human, aiDiff);
     scoreBoard[i] = 0;
   }
+  //Ai players
+  for (let i=humanCount; i<players.length; i++) {
+    players[i] = new Player(AI.katie, aiDiff);
+    scoreBoard[i] = 0;
+  }
+  
 }
 
 
