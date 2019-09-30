@@ -36,6 +36,56 @@ class Player {
     return ans;
   }
   
+  projection(x,y){
+     switch(growthPattern){
+       case GROWPATTERN.diamond:
+       //find vertical line
+       let top = y; let bottom = y;
+       let topgrowing = true;
+       let bottomgrowing = true;
+       while (topgrowing && bottomgrowing){
+          if (!grid[x][top].owned && top > 0){
+             top--;
+          } else{
+             topgrowing = false; 
+          }
+          
+          if (!grid[x][bottom].owned && bottom < rows-1){
+             bottom++; 
+          } else {
+             bottomgrowing = false; 
+          }
+       }
+       //find horizonital line
+       let left = x; let right = x;
+       let leftgrowing = true;
+       let rightgrowing = true;
+       while(leftgrowing && rightgrowing){
+          if (!grid[left][y].owned && left > 0){
+             left--;
+          } else {
+             leftgrowing = false; 
+          }
+          if (!grid[right][y].owned && right < cols-1){
+             right++; 
+          } else {
+             rightgrowing = false; 
+          }
+       }
+       let vert = bottom-top;
+       let horz = right-left;
+       return vert*horz/2;
+       /*
+       return -(x+y);
+       this actually creates some really cool effects in sim mode with katie
+       */
+       
+       default:
+       print("Error in projection, unsupported growth");
+       break;
+     }
+  }
+  
   attack(x,y){
     let total = scoreBoard.reduce((a, b) => a+b, 0);
     if (total == ((cols*rows)-obstacleCount) || gameOver) {
@@ -64,9 +114,21 @@ class Player {
        this.random_move();
        return;
     }
-    let val = random(cand);
-    let x = val%cols;
-    let y = floor(val/cols);
+    let bestLocation = -1;
+    let bestValue = -10000000;
+    for(let i=0; i<cand.length; i++){
+      let val = cand[i];
+      let x = val%cols;
+      let y = floor(val/cols);
+      let currValue = this.projection(x,y);
+      //print( x + "," + y + " has val of " + currValue);
+      if (currValue > bestValue){
+         bestValue = currValue;
+         bestLocation = val;
+      }
+    }
+    let x = bestLocation%cols;
+    let y = floor(bestLocation/cols);
     this.attack(x,y);
   }
   
@@ -74,12 +136,15 @@ class Player {
    switch(this.personality){
       case AI.human:
       break;
+      
       case AI.rando:
       this.random_move();
       break;
+      
       case AI.katie:
       this.katie_move();
       break;
+      
       default:
       print("Error in AI switch");
       this.random_move();

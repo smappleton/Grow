@@ -19,19 +19,20 @@ let noisy = true;
 let noiseScale = 0.1;
 let cols;
 let rows;
-let size = 5;
+let size = 20;
 let showGrid = false;
-let frameSpeed= 1000;
+let frameSpeed= 100;
 let humanCount = 0;
 let playerCount = 2;
 let boardSeed = 0;
 let aiSeed = 0;
-let aiDiff = 2;
+let aiDiff = 10;
 let players = new Array(playerCount);
 let scoreBoard = new Array(playerCount);
 let contestCount = new Array(playerCount);
 let currentPlayer = 0;
 let gameOver = false;
+let mercy = false;
 let obstacleCount = 0;
 let playArea = 0;
 
@@ -205,7 +206,7 @@ function setup() {
   if (boardSeed != 0){
     noiseSeed(boardSeed);
   }
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight, P2D);
   background(0);
   frameRate(frameSpeed);
   cols = floor(width / size);
@@ -245,12 +246,25 @@ function draw() {
   if (currentPlayer >= humanCount && !gameOver) {
     players[currentPlayer].move();
   }
-
+   
+  let first = max(...scoreBoard);
+  let ifirst = scoreBoard.indexOf(first);
+  scoreBoard[ifirst] = -Infinity;
+  let second = max(...scoreBoard);
+  scoreBoard[ifirst] = first;
+  let diff = first-second;
+  
+  if (diff > available.length && !mercy){
+     print("MERCY- Player " + (ifirst+1) + " has won!"); 
+     mercy = true;
+  }
+  
   if (getAvailable().length == 0 && !gameOver) {
     console.log("GAME OVER");
     console.log("Board size - " + playArea);
     console.log("Final scores - " + scoreBoard);
-    console.log("Final coverage% - " + scoreBoard.map((x) => round((x/playArea)*100) ));
+    let percentages = scoreBoard.map((x) => round((x/playArea)*100));
+    console.log("Final coverage % - " + percentages);
     gameOver = true;
   }
 }
