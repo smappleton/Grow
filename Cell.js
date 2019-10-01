@@ -1,13 +1,16 @@
 class Cell {
 
-  constructor(xIndex, yIndex, size, obs) {
+  constructor(myBoard, xIndex, yIndex, size, obs, visible) {
+    this.board = myBoard;
     this.xIndex = xIndex;
     this.yIndex = yIndex;
-    this.x = xIndex*size;
-    this.y = yIndex*size;
     this.size = size;
+    this.x = xIndex*this.size;
+    this.y = yIndex*this.size;
+
 
     this._owner = color(225);
+    this.visible = visible;
     this._owned = false;
     this._contested = false;
     if (obs == undefined) {
@@ -19,8 +22,28 @@ class Cell {
     
     this.show();
   }
+  
+  //for reproducing board
+  clone(){
+    let obs = undefined;
+    if (this._obstacle){
+       obs = true; 
+    }
+     let ans = new Cell(this.xIndex, this.yIndex, this.size, obs, this.visible);
+     if (this._contested){
+        ans.contest(); 
+     }
+     if(this._owned){
+        ans.owner = this._owner; 
+     }
+     return ans;
+  }
 
   show() {
+    //dont show if marked invisible
+    if (!this.visible){
+       return; 
+    }
     if (this._obstacle) {
       fill(0);
       strokeWeight(1);
@@ -53,7 +76,7 @@ class Cell {
   }
 
   //use this to change growth patterns
-  getNeighbors() {
+  getNeighbors(grid) {
     let neighbors = [];
     switch(growthPattern){
       case GROWPATTERN.diamond: 
@@ -63,7 +86,7 @@ class Cell {
           let nearY = j+this.yIndex;
           if (nearX > -1 && nearX < cols && 
             nearY > -1 && nearY < rows && abs(i)!=abs(j)) {
-            neighbors.push(grid[nearX][nearY]);
+            neighbors.push(this.board.grid[nearX][nearY]);
           }
         }
       }
@@ -102,7 +125,7 @@ class Cell {
       this.claimNeighbors();
       this._contested = false;
       this.show();
-      claimed(this.xIndex, this.yIndex);
+      this.board.claimed(this.xIndex, this.yIndex);
     } else {
       //console.log("misclick!");
       currentPlayer--;

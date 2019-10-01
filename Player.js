@@ -1,13 +1,14 @@
 class Player {
   
-  constructor(id, difficulty) {
+  constructor(id, difficulty, board) {
+    this.board = board;
     this.clr = color((255), 
       random(255), 
       random(255));
     this.personality = id;
     this.diff = difficulty;
     if(id != AI.human){
-      this.regionMap = new RegionMap(difficulty, grid);
+      this.regionMap = new RegionMap(difficulty, this.board.grid);
     }
   }
   
@@ -22,7 +23,7 @@ class Player {
            let rval = arr[r];
            let rx = rval%cols;
            let ry = floor(rval/cols);
-           if (grid[rx][ry].owned){
+           if (this.board.grid[rx][ry].owned){
              //remove from map
              arr.splice(r,1);
            } else {
@@ -44,13 +45,13 @@ class Player {
        let topgrowing = true;
        let bottomgrowing = true;
        while (topgrowing && bottomgrowing){
-          if (!grid[x][top].owned && top > 0){
+          if (!this.board.grid[x][top].owned && top > 0){
              top--;
           } else{
              topgrowing = false; 
           }
           
-          if (!grid[x][bottom].owned && bottom < rows-1){
+          if (!this.board.grid[x][bottom].owned && bottom < rows-1){
              bottom++; 
           } else {
              bottomgrowing = false; 
@@ -61,12 +62,12 @@ class Player {
        let leftgrowing = true;
        let rightgrowing = true;
        while(leftgrowing && rightgrowing){
-          if (!grid[left][y].owned && left > 0){
+          if (!this.board.grid[left][y].owned && left > 0){
              left--;
           } else {
              leftgrowing = false; 
           }
-          if (!grid[right][y].owned && right < cols-1){
+          if (!this.board.grid[right][y].owned && right < cols-1){
              right++; 
           } else {
              rightgrowing = false; 
@@ -91,20 +92,30 @@ class Player {
     if (total == ((cols*rows)-obstacleCount) || gameOver) {
       return;
     } 
-    grid[x][y].owner = this.clr;
+    this.board.grid[x][y].owner = this.clr;
     currentPlayer++;
     if (currentPlayer == playerCount){
-      grow();
+      this.board.grow();
     }
   }
 
   random_move() {
     //these are now flat indices
-    let available = getAvailable();
+    let available = this.board.available;
     let flat = available[floor(random(available.length))];
     let x = flat % cols;
     let y = floor(flat/cols);
     this.attack(x,y);
+  }
+  
+  gabe_move(){
+    let cand = this.candidates();
+    if (cand.length == 0){
+       print("Bad candidates!");
+       this.random_move();
+       return;
+    }
+    this.random_move();
   }
   
   katie_move(){
@@ -143,6 +154,10 @@ class Player {
       
       case AI.katie:
       this.katie_move();
+      break;
+      
+      case AI.gabe:
+      this.gabe_move();
       break;
       
       default:
