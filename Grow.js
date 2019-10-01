@@ -34,6 +34,11 @@ let mercy = false;
 let obstacleCount = 0;
 let playArea = 0;
 
+let uiWidth = 0;
+let uiHeight = 50;
+let boardWidth = 0;
+let boardHeight = 0;
+
 let growthPattern = GROWPATTERN.diamond;
 
 
@@ -41,15 +46,15 @@ let growthPattern = GROWPATTERN.diamond;
 
 //needs to be board specific
 function mousePressed() {
+  if (currentPlayer >= humanCount){
+    return;
+  }
   //TODO this doesnt need a double for
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j< rows; j++) {
       if (mainBoard.grid[i][j].contains(mouseX, mouseY)) {
         mainBoard.grid[i][j].owner = players[currentPlayer].clr;
         currentPlayer++;
-        if (currentPlayer == playerCount) {
-          mainBoard.grow();
-        }
       }
     }
   }
@@ -108,10 +113,13 @@ function setup() {
     noiseSeed(boardSeed);
   }
   createCanvas(windowWidth, windowHeight, P2D);
+  boardWidth = windowWidth;
+  //leave space for ui
+  boardHeight = windowHeight-uiHeight;
   background(0);
   frameRate(frameSpeed);
-  cols = floor(width / size);
-  rows = floor(height / size);
+  cols = floor(boardWidth / size);
+  rows = floor(boardHeight / size);
   
   mainBoard = new Board(cols,rows, size, true);
   
@@ -126,13 +134,35 @@ function setup() {
     mainBoard.scoreBoard[i] = 0;
   }
   
+  uiWidth = floor(boardWidth/playerCount);
+  
+  
 }
 
 
 function draw() {
+  //draw UI
+  let percentages = mainBoard.scoreBoard.map((x) => round((x/playArea)*100));
+  for (let i=0; i<playerCount; i++){
+     let x = i*uiWidth;
+     let y = boardHeight;
+     //clear area
+     fill(0);
+     stroke(0);
+     rect(x,y,uiWidth,uiHeight);
+     let s = "P" + (i+1) + "- " + percentages[i] + "%, " + mainBoard.scoreBoard[i];
+     textSize(uiHeight);
+     stroke(players[i].clr);
+     fill(players[i].clr);
+     text(s,x,y,uiWidth,uiHeight);
+  }
   //call the AI
-  if (currentPlayer >= humanCount && !gameOver) {
+  if (currentPlayer >= humanCount && !gameOver && playerCount != humanCount) {
     players[currentPlayer].move();
+  }
+  
+  if (currentPlayer == playerCount) {
+    mainBoard.grow();
   }
    
   let first = max(...mainBoard.scoreBoard);
@@ -148,6 +178,12 @@ function draw() {
   }
   
   if (mainBoard.available.length == 0 && !gameOver) {
+    textSize(uiHeight);
+    fill(255);
+    stroke(0);
+    let x = floor(boardWidth/2);
+    let y = floor(boardHeight/2);
+    text("GAME OVER", x-200,y);
     console.log("GAME OVER");
     console.log("Board size - " + playArea);
     console.log("Final scores - " + mainBoard.scoreBoard);

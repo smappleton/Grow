@@ -94,9 +94,6 @@ class Player {
     } 
     this.board.grid[x][y].owner = this.clr;
     currentPlayer++;
-    if (currentPlayer == playerCount){
-      this.board.grow();
-    }
   }
 
   random_move() {
