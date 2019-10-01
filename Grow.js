@@ -29,7 +29,6 @@ let aiSeed = 0;
 let aiDiff = 10;
 let players = new Array(playerCount);
 let scoreBoard = new Array(playerCount);
-let contestCount = new Array(playerCount);
 let currentPlayer = 0;
 let gameOver = false;
 let mercy = false;
@@ -115,7 +114,8 @@ function setup() {
   cols = floor(width / size);
   rows = floor(height / size);
   
-  mainBoard = new Board(cols,rows, size);
+  mainBoard = new Board(cols,rows, size, true);
+  let mycopy = mainBoard.deepClone();
   
   //human players
   for (let i=0; i<humanCount; i++){

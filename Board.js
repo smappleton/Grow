@@ -1,11 +1,13 @@
 class Board{
    
-  constructor(cols,rows, mysize){
+  constructor(cols,rows, mysize, main){
     
     //list of available cells by flat index, this is for searching in logn time
     this._available = [];
     //TODO make a flat list of contested cells too
     
+    //boolean to track if this is the mainboard
+    this.main = main;
     this.grid = new Array(cols);
     this.noiseGrid = new Array(cols);
     //build 2d array
@@ -29,6 +31,27 @@ class Board{
     
     this.buildAvailable();
   }
+  
+  //clone the whole board state but make it invisible.
+  deepClone(){
+     let newBoard = new Board(cols,rows,size,false);
+     //copy the available array
+     let arr = new Array(this._available.length);
+     for (let i=0; i<this._available.length; i++){
+        arr[i] = this._available[i];
+     }
+     newBoard.available = arr;
+     
+     //copy the grid
+     for (let x=0; x<cols; x++){
+        for (let y=0; y<rows; y++){
+          let newCell = this.grid[x][y].deepClone(newBoard);
+          newBoard.grid[x][y] = newCell;
+        }
+     }
+     return newBoard;
+  }
+  
   
   grow(){
     //create a list of contests
@@ -84,11 +107,14 @@ class Board{
     }
 
     //start next turn
-    currentPlayer = 0;
-    //raw scores
-    //console.log(scoreBoard);
-    //show coverage
-    console.log(scoreBoard.map((x) => round((x/playArea)*100) ));  
+    if (this.main){
+      currentPlayer = 0;
+      //raw scores
+      //console.log(scoreBoard);
+      //show coverage
+      console.log(scoreBoard.map((x) => round((x/playArea)*100) )); 
+    }
+ 
   }
   
   buildAvailable(){
@@ -116,5 +142,9 @@ class Board{
   
   get available(){
      return this._available; 
+  }
+  
+  set available(newArr){
+    this._available = newArr;
   }
 }

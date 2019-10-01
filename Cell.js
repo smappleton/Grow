@@ -24,12 +24,12 @@ class Cell {
   }
   
   //for reproducing board
-  clone(){
+  deepClone(newBoard){
     let obs = undefined;
     if (this._obstacle){
        obs = true; 
     }
-     let ans = new Cell(this.xIndex, this.yIndex, this.size, obs, this.visible);
+     let ans = new Cell(newBoard, this.xIndex, this.yIndex, this.size, obs, false);
      if (this._contested){
         ans.contest(); 
      }
@@ -126,9 +126,15 @@ class Cell {
       this._contested = false;
       this.show();
       this.board.claimed(this.xIndex, this.yIndex);
-    } else {
-      //console.log("misclick!");
-      currentPlayer--;
+    } else{
+      //misclick case
+      if (this.board.main){
+       currentPlayer--; 
+      }
+      //copy case
+      else {
+        
+      }
     }
   }
 
