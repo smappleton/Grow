@@ -120,11 +120,21 @@ function setup() {
     noiseSeed(boardSeed);
   }
   createCanvas(windowWidth, windowHeight, P2D);
+  pixelDensity(1);
+  //make UI height responsive to screen size
+  uiHeight = floor(windowHeight/20);
   boardWidth = windowWidth;
-  //leave space for ui
-  boardHeight = windowHeight-uiHeight;
   background(0);
   frameRate(frameSpeed);
+  
+  //change size for small devices
+  if(windowWidth < 500){
+    size = floor(size/2);
+    uiHeight = floor(uiHeight*0.66);
+  }
+  
+  //leave space for ui
+  boardHeight = windowHeight-uiHeight;
   cols = floor(boardWidth / size);
   rows = floor(boardHeight / size);
   
@@ -190,7 +200,7 @@ function draw() {
     stroke(0);
     let x = floor(boardWidth/2);
     let y = floor(boardHeight/2);
-    text("GAME OVER", x-200,y);
+    text("GAME OVER", x-(windowWidth*0.1),y, uiWidth, uiHeight*5);
     console.log("GAME OVER");
     console.log("Board size - " + playArea);
     console.log("Final scores - " + mainBoard.scoreBoard);
