@@ -21,9 +21,9 @@ let cols;
 let rows;
 let size = 20;
 let showGrid = false;
-let frameSpeed= 1;
 let humanCount = 1;
 let playerCount = 2;
+let frameSpeed = 0;
 let boardSeed = 0;
 let aiSeed = 0;
 let aiDiff = 6;
@@ -40,6 +40,13 @@ let boardWidth = 0;
 let boardHeight = 0;
 
 let growthPattern = GROWPATTERN.diamond;
+
+//choose framespeed
+if (humanCount <= 0){
+   frameSpeed = 100;
+} else {
+   frameSpeed = 1; 
+}
 
 
 
