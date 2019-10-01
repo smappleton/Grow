@@ -88,7 +88,7 @@ class Player {
   }
   
   attack(x,y){
-    let total = scoreBoard.reduce((a, b) => a+b, 0);
+    let total = this.board.scoreBoard.reduce((a, b) => a+b, 0);
     if (total == ((cols*rows)-obstacleCount) || gameOver) {
       return;
     } 
@@ -102,10 +102,24 @@ class Player {
   random_move() {
     //these are now flat indices
     let available = this.board.available;
+    if(available.length == 0){
+      return;
+    }
     let flat = available[floor(random(available.length))];
     let x = flat % cols;
     let y = floor(flat/cols);
     this.attack(x,y);
+  }
+  
+  //plays out the game with a given move and number of turns
+  //just grows no turn prediction
+  //returns the ending scoreboard
+  simplePlayout(board,x,y,turns){
+    board.grid[x][y].owner = this.clr;
+    for (let i=0; i<turns; i++){
+       board.grow(); 
+    }
+    return board.scoreBoard;
   }
   
   gabe_move(){
@@ -115,7 +129,26 @@ class Player {
        this.random_move();
        return;
     }
-    this.random_move();
+    
+    //find best move by greed
+    let bestX = -1;
+    let bestY = -1;
+    let bestValue = -1000;
+    //test each candidate on a new board
+    for (let i=0; i<cand.length; i++){
+        let copyBoard = mainBoard.deepClone();
+        let currX = cand[i]%cols;
+        let currY = floor(cand[i]/cols);
+        copyBoard.grid[currX][currY].owner = this.clr;
+        let scores = this.simplePlayout(copyBoard,currX,currY,10);
+        let score = scores[currentPlayer];
+        if (score > bestValue){
+           bestX = currX;
+           bestY = currY;
+           bestValue = score;
+        }
+    }
+    this.attack(bestX,bestY);
   }
   
   katie_move(){

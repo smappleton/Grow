@@ -76,7 +76,7 @@ class Cell {
   }
 
   //use this to change growth patterns
-  getNeighbors(grid) {
+  getNeighbors() {
     let neighbors = [];
     switch(growthPattern){
       case GROWPATTERN.diamond: 
@@ -119,7 +119,7 @@ class Cell {
   set owner(newOwner) {
     if (!this._owned) {
       let playerID = getPlayer(newOwner);
-      scoreBoard[playerID] += 1;
+      this.board.scoreBoard[playerID] += 1;
       this._owned = true;
       this._owner = newOwner;
       this.claimNeighbors();

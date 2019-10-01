@@ -26,9 +26,8 @@ let humanCount = 1;
 let playerCount = 2;
 let boardSeed = 0;
 let aiSeed = 0;
-let aiDiff = 10;
+let aiDiff = 6;
 let players = new Array(playerCount);
-let scoreBoard = new Array(playerCount);
 let currentPlayer = 0;
 let gameOver = false;
 let mercy = false;
@@ -115,17 +114,16 @@ function setup() {
   rows = floor(height / size);
   
   mainBoard = new Board(cols,rows, size, true);
-  let mycopy = mainBoard.deepClone();
   
   //human players
   for (let i=0; i<humanCount; i++){
     players[i] = new Player(AI.human, aiDiff, mainBoard);
-    scoreBoard[i] = 0;
+    mainBoard.scoreBoard[i] = 0;
   }
   //Ai players
   for (let i=humanCount; i<players.length; i++) {
-    players[i] = new Player(AI.gabe-i*2, aiDiff, mainBoard);
-    scoreBoard[i] = 0;
+    players[i] = new Player(AI.gabe, aiDiff, mainBoard);
+    mainBoard.scoreBoard[i] = 0;
   }
   
 }
@@ -137,11 +135,11 @@ function draw() {
     players[currentPlayer].move();
   }
    
-  let first = max(...scoreBoard);
-  let ifirst = scoreBoard.indexOf(first);
-  scoreBoard[ifirst] = -Infinity;
-  let second = max(...scoreBoard);
-  scoreBoard[ifirst] = first;
+  let first = max(...mainBoard.scoreBoard);
+  let ifirst = mainBoard.scoreBoard.indexOf(first);
+  mainBoard.scoreBoard[ifirst] = -Infinity;
+  let second = max(...mainBoard.scoreBoard);
+  mainBoard.scoreBoard[ifirst] = first;
   let diff = first-second;
   
   if (diff > mainBoard.available.length && !mercy){
@@ -152,8 +150,8 @@ function draw() {
   if (mainBoard.available.length == 0 && !gameOver) {
     console.log("GAME OVER");
     console.log("Board size - " + playArea);
-    console.log("Final scores - " + scoreBoard);
-    let percentages = scoreBoard.map((x) => round((x/playArea)*100));
+    console.log("Final scores - " + mainBoard.scoreBoard);
+    let percentages = mainBoard.scoreBoard.map((x) => round((x/playArea)*100));
     console.log("Final coverage % - " + percentages);
     gameOver = true;
   }

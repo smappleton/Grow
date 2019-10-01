@@ -6,6 +6,8 @@ class Board{
     this._available = [];
     //TODO make a flat list of contested cells too
     
+    //this boards scoreboard
+    this.scoreBoard = new Array(playerCount);
     //boolean to track if this is the mainboard
     this.main = main;
     this.grid = new Array(cols);
@@ -20,10 +22,10 @@ class Board{
     //add cells and add noise
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j< rows; j++) {
-        this.grid[i][j] = new Cell(this, i, j, mysize, undefined, true);
+        this.grid[i][j] = new Cell(this, i, j, mysize, undefined, this.main);
         let val = round(noise(i*noiseScale, j*noiseScale));
         if (val == 1 && noisy) {
-          this.grid[i][j] = new Cell(this, i, j, mysize, 1, true);
+          this.grid[i][j] = new Cell(this, i, j, mysize, 1, this.main);
           obstacleCount++;
         }
       }
@@ -41,6 +43,13 @@ class Board{
         arr[i] = this._available[i];
      }
      newBoard.available = arr;
+     
+     //copy the scoreBoard
+     let scores = new Array(this.scoreBoard.length);
+     for (let i=0; i<this.scoreBoard.length; i++){
+        scores[i] = this.scoreBoard[i]; 
+     }
+     newBoard.scoreBoard = scores;
      
      //copy the grid
      for (let x=0; x<cols; x++){
@@ -110,9 +119,9 @@ class Board{
     if (this.main){
       currentPlayer = 0;
       //raw scores
-      //console.log(scoreBoard);
+      //console.log(this.scoreBoard);
       //show coverage
-      console.log(scoreBoard.map((x) => round((x/playArea)*100) )); 
+      console.log(this.scoreBoard.map((x) => round((x/playArea)*100) )); 
     }
  
   }
