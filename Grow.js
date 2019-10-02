@@ -9,8 +9,7 @@ const AI = {
   rando : 1,
   katie : 2,
   gabe : 3,
-  clint : 4,
-  carla : 5,
+  carla : 4,
 };
 
 //TODO this should all probably be in its own object
@@ -20,7 +19,7 @@ let noiseScale = 0.1;
 let cols;
 let rows;
 let size = 20;
-let showGrid = false;
+let showGrid = true;
 let humanCount = 1;
 let playerCount = 2;
 let frameSpeed = 0;
@@ -129,8 +128,9 @@ function setup() {
   
   //change size for small devices
   if(windowWidth < 500){
-    size = floor(size/2);
+    size = floor(size*0.8);
     uiHeight = floor(uiHeight*0.66);
+    noiseScale = noiseScale*2;
   }
   
   //leave space for ui

@@ -119,6 +119,75 @@ class Player {
     return board.scoreBoard;
   }
   
+  //a monte carlo playout in n turns
+  montePlayout(board,x,y,turns){
+    board.grid[x][y].owner = this.clr;
+    let myPlayer = currentPlayer;
+    let thisPlayer = myPlayer+1;
+    
+    //find best move by monte carlo
+    //returns scoreboard
+    for (let i=0; i<turns; i++){
+      //cycle through all players each turn
+      while(thisPlayer != myPlayer){ 
+       if (thisPlayer === playerCount){
+          board.grow();
+          thisPlayer = 0; 
+       }
+       let available = board.available;
+       if(available.length == 0){
+         break;
+       }
+       let flat = available[floor(random(available.length))];
+       let currx = flat % cols;
+       let curry = floor(flat/cols);
+       board.grid[currx][curry].owner = players[thisPlayer].clr;
+       
+       thisPlayer++;
+     }
+     thisPlayer++;
+   }
+   return board.scoreBoard;
+  }
+  
+  carla_move(){
+    //number of playouts for each move
+    //heavily effects performance
+    let playouts = 12;
+    let cand = this.candidates();
+    if (cand.length == 0){
+       print("Bad candidates!");
+       this.random_move();
+       return;
+    }
+    
+    //find best move by monte carlo
+    let bestX = -1;
+    let bestY = -1;
+    let bestValue = -1000; 
+    for (let i=0; i<cand.length; i++){
+      let count = 0;
+      let sum = 0;
+      let currX = cand[i]%cols;
+      let currY = floor(cand[i]/cols);
+      
+      for (let j=0; j<playouts; j++){
+        let copyBoard = mainBoard.deepClone();
+        //five turn playout
+        let scores = this.montePlayout(copyBoard,currX,currY,15);
+        sum += scores[currentPlayer];
+        count++;
+      }
+      let avg = sum/count;
+      if(avg > bestValue){
+        bestX = currX;
+        bestY = currY;
+        bestValue = avg;
+      }
+    }
+    this.attack(bestX,bestY);
+  }
+  
   gabe_move(){
     let cand = this.candidates();
     if (cand.length == 0){
@@ -188,6 +257,10 @@ class Player {
       
       case AI.gabe:
       this.gabe_move();
+      break;
+      
+      case AI.carla:
+      this.carla_move();
       break;
       
       default:
