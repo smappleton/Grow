@@ -109,7 +109,7 @@ class Player {
   }
   
   //plays out the game with a given move and number of turns
-  //just grows no turn prediction
+  //just grows no turn prediction, DESTROYS BOARD
   //returns the ending scoreboard
   simplePlayout(board,x,y,turns){
     board.grid[x][y].owner = this.clr;
@@ -150,6 +150,44 @@ class Player {
    return board.scoreBoard;
   }
   
+  //the hill climbing algorithm that looks for a local maximum
+  //returns a Result object that has the x,y,and score of maximum
+  hillClimb(board,x,y,score, turns){
+    let currCell = board.grid[x][y];
+    let currScore = score;
+    let finished = false;
+    //keep looking until all neighbors are worse
+    while(!finished){
+      let nbrs = currCell.getNeighbors();
+      let bestX = -1;
+      let bestY = -1;
+      let bestVal = -1000;
+      //find the best neighbor
+      for (let i=0; i<nbrs.length; i++){
+        let n = nbrs[i];
+        //skip owned neighbors
+        if(n.owned){
+          continue; 
+        }
+        let copyBoard = board.deepClone();
+        let scores = this.simplePlayout(copyBoard,n.xIndex,n.yIndex,turns);
+        let score = scores[currentPlayer];
+        if(score > bestVal){
+           bestX = n.xIndex;
+           bestY = n.yIndex;
+           bestVal = score;
+        }
+      }
+      if(bestVal > currScore){
+        currScore = bestVal;
+        currCell = board.grid[bestX][bestY];
+      } else {
+         finished = true;
+      }
+    }
+    return new Result(currCell.xIndex,currCell.yIndex,currScore);
+  }
+  
   carla_move(){
     //number of playouts for each move
     //heavily effects performance
@@ -186,6 +224,52 @@ class Player {
       }
     }
     this.attack(bestX,bestY);
+  }
+  
+  clint_move(){
+    let turns = 10;
+    let cand = this.candidates();
+    if (cand.length == 0){
+       print("Bad candidates!");
+       this.random_move();
+       return;
+    }
+    
+    //find best moves by greed and use topology to find local maximum
+    let sortedCand = new Array(cand.length);
+    //test each candidate on a new board
+    for (let i=0; i<cand.length; i++){
+        let copyBoard = mainBoard.deepClone();
+        let currX = cand[i]%cols;
+        let currY = floor(cand[i]/cols);
+        copyBoard.grid[currX][currY].owner = this.clr;
+        //number of turns in playout is significant
+        let scores = this.simplePlayout(copyBoard,currX,currY,turns);
+        let score = scores[currentPlayer];
+        let currResult = new Result(currX,currY,score);
+        sortedCand.push(currResult);
+    }
+    
+    //sort the candidate results by score
+    sortedCand.sort((a,b) => (a.score < b.score) ? 1 : -1);
+    
+    //now choose the top n and do the hill climbing
+    let topCount = 10;
+    let count = min(topCount,sortedCand.length);
+    let best = sortedCand.splice(0,count);
+    let firstScore = best[0].score;
+    //the length of best is deceiving because of how javascript works
+    for (let i=0; i<Object.keys(best).length; i++){
+      let copyBoard = mainBoard.deepClone();
+      let newBest = this.hillClimb(copyBoard,best[i].x,best[i].y,best[i].score, turns);
+      best[i] = newBest;
+    }
+    //sort again
+    best.sort((a,b) => (a.score < b.score) ? 1 : -1);
+    
+    let improvement = best[0].score - firstScore;
+    
+    this.attack(best[0].x, best[0].y);
   }
   
   gabe_move(){
@@ -247,7 +331,7 @@ class Player {
       case AI.human:
       break;
       
-      case AI.rando:
+      case AI.randy:
       this.random_move();
       break;
       
@@ -261,6 +345,10 @@ class Player {
       
       case AI.carla:
       this.carla_move();
+      break;
+      
+      case AI.clint:
+      this.clint_move();
       break;
       
       default:

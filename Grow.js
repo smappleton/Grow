@@ -6,10 +6,11 @@ const GROWPATTERN = {
 
 const AI = {
   human : 0,
-  rando : 1,
+  randy : 1,
   katie : 2,
   gabe : 3,
   carla : 4,
+  clint : 5,
 };
 
 //TODO this should all probably be in its own object
@@ -107,7 +108,35 @@ function binarySearchArr(arr, val){
 function winningControl(scores){
   let first = max(...scores);
   return first/playArea;
-  
+}
+
+
+function initials(id){
+  let currPlyr = players[id];
+  let person = currPlyr.personality;
+  switch(person){
+      case AI.human:
+      return "HU";
+      
+      case AI.randy:
+      return "RA";
+      
+      case AI.katie:
+      return "KA";
+      
+      case AI.gabe:
+      return "GA";
+      
+      case AI.carla:
+      return "CA";
+      
+      case AI.clint:
+      return "CL";
+      
+      default:
+      print("Error in initials switch");
+      return "P";
+   }
 }
 
 
@@ -147,7 +176,7 @@ function setup() {
   }
   //Ai players
   for (let i=humanCount; i<players.length; i++) {
-    players[i] = new Player(AI.gabe, aiDiff, mainBoard);
+    players[i] = new Player(AI.clint, aiDiff, mainBoard);
     mainBoard.scoreBoard[i] = 0;
   }
   
@@ -167,7 +196,7 @@ function draw() {
      fill(0);
      stroke(0);
      rect(x,y,uiWidth,uiHeight);
-     let s = "P" + (i+1) + "- " + percentages[i] + "%, " + mainBoard.scoreBoard[i];
+     let s = initials(i) + (i+1) + "- " + percentages[i] + "%, " + mainBoard.scoreBoard[i];
      textSize(uiHeight);
      stroke(players[i].clr);
      fill(players[i].clr);
