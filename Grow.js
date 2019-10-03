@@ -161,8 +161,8 @@ function setup() {
   
   //change size for small devices
   if(windowWidth < 500){
-    size = floor(size*0.8);
-    uiHeight = floor(uiHeight*0.66);
+    size = floor(size*0.6);
+    uiHeight = floor(uiHeight*0.6);
     noiseScale = noiseScale*2;
   }
   
