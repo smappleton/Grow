@@ -11,6 +11,7 @@ const AI = {
   gabe : 3,
   carla : 4,
   clint : 5,
+  minerva : 6,
 };
 
 //TODO this should all probably be in its own object
@@ -133,6 +134,9 @@ function initials(id){
       case AI.clint:
       return "CL";
       
+      case AI.minerva:
+      return "MN";
+      
       default:
       print("Error in initials switch");
       return "P";
@@ -176,7 +180,7 @@ function setup() {
   }
   //Ai players
   for (let i=humanCount; i<players.length; i++) {
-    players[i] = new Player(AI.clint, aiDiff, mainBoard);
+    players[i] = new Player(AI.minerva, aiDiff, mainBoard);
     mainBoard.scoreBoard[i] = 0;
   }
   

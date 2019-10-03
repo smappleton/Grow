@@ -44,13 +44,6 @@ class Board{
      }
      newBoard.available = arr;
      
-     //copy the scoreBoard
-     let scores = new Array(this.scoreBoard.length);
-     for (let i=0; i<this.scoreBoard.length; i++){
-        scores[i] = this.scoreBoard[i]; 
-     }
-     newBoard.scoreBoard = scores;
-     
      //copy the grid
      for (let x=0; x<cols; x++){
         for (let y=0; y<rows; y++){
@@ -58,6 +51,14 @@ class Board{
           newBoard.grid[x][y] = newCell;
         }
      }
+     
+     //copy the scoreBoard
+     let scores = new Array(this.scoreBoard.length);
+     for (let i=0; i<this.scoreBoard.length; i++){
+        scores[i] = this.scoreBoard[i]; 
+     }
+     newBoard.scoreBoard = scores;
+     
      return newBoard;
   }
   

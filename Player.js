@@ -150,11 +150,34 @@ class Player {
    return board.scoreBoard;
   }
   
+  //min max the a given scoreBoard
+  //if the player is the the lead, gives a positive of how far ahead
+  //if not, shows how far behind the leader
+  minMax(givenBoard){
+    //copy scoreBoard
+    let copyBoard = new Array(0);
+    for (let i=0; i<givenBoard.length; i++){
+      copyBoard.push(givenBoard[i]); 
+    }
+    
+    let top = max(...copyBoard);
+    let leader = copyBoard.indexOf(top);
+    if (currentPlayer == leader){
+       copyBoard.splice(leader,1);
+       let second = max(...copyBoard);
+       return top-second;
+    } else {
+      let myScore = copyBoard[currentPlayer];
+      return -(top-myScore);
+    }
+  }
+  
   //the hill climbing algorithm that looks for a local maximum
   //returns a Result object that has the x,y,and score of maximum
-  hillClimb(board,x,y,score, turns){
+  hillClimb(board,x,y,score, startBoard, turns){
     let currCell = board.grid[x][y];
     let currScore = score;
+    let currScores = startBoard;
     let finished = false;
     //keep looking until all neighbors are worse
     while(!finished){
@@ -162,6 +185,7 @@ class Player {
       let bestX = -1;
       let bestY = -1;
       let bestVal = -1000;
+      let bestScores = new Array(0);
       //find the best neighbor
       for (let i=0; i<nbrs.length; i++){
         let n = nbrs[i];
@@ -176,16 +200,61 @@ class Player {
            bestX = n.xIndex;
            bestY = n.yIndex;
            bestVal = score;
+           bestScores = scores;
         }
       }
       if(bestVal > currScore){
         currScore = bestVal;
         currCell = board.grid[bestX][bestY];
+        currScores = bestScores;
       } else {
          finished = true;
       }
     }
-    return new Result(currCell.xIndex,currCell.yIndex,currScore);
+    return new Result(currCell.xIndex,currCell.yIndex,currScore,currScores);
+  }
+  
+  //the hill climbing algorithm that looks for a local maximum
+  //returns a Result object that has the x,y,and score of maximum
+  //this one focuses on min max instead of raw score
+  hillMinMax(board,x,y,score, startBoard, turns){
+    let currCell = board.grid[x][y];
+    let currScore = this.minMax(startBoard);
+    let currScores = startBoard;
+    let finished = false;
+    //keep looking until all neighbors are worse
+    while(!finished){
+      let nbrs = currCell.getNeighbors();
+      let bestX = -1;
+      let bestY = -1;
+      let bestVal = -1000;
+      let bestScores = new Array(0);
+      //find the best neighbor
+      for (let i=0; i<nbrs.length; i++){
+        let n = nbrs[i];
+        //skip owned neighbors
+        if(n.owned){
+          continue; 
+        }
+        let copyBoard = board.deepClone();
+        let scores = this.simplePlayout(copyBoard,n.xIndex,n.yIndex,turns);
+        let score = this.minMax(scores);
+        if(score > bestVal){
+           bestX = n.xIndex;
+           bestY = n.yIndex;
+           bestVal = score;
+           bestScores = scores;
+        }
+      }
+      if(bestVal > currScore){
+        currScore = bestVal;
+        currCell = board.grid[bestX][bestY];
+        currScores = bestScores;
+      } else {
+         finished = true;
+      }
+    }
+    return new Result(currCell.xIndex,currCell.yIndex,currScore,currScores);
   }
   
   carla_move(){
@@ -246,7 +315,7 @@ class Player {
         //number of turns in playout is significant
         let scores = this.simplePlayout(copyBoard,currX,currY,turns);
         let score = scores[currentPlayer];
-        let currResult = new Result(currX,currY,score);
+        let currResult = new Result(currX,currY,score,scores);
         sortedCand.push(currResult);
     }
     
@@ -261,7 +330,7 @@ class Player {
     //the length of best is deceiving because of how javascript works
     for (let i=0; i<Object.keys(best).length; i++){
       let copyBoard = mainBoard.deepClone();
-      let newBest = this.hillClimb(copyBoard,best[i].x,best[i].y,best[i].score, turns);
+      let newBest = this.hillClimb(copyBoard,best[i].x,best[i].y,best[i].score, best[i].scoreBoard, turns);
       best[i] = newBest;
     }
     //sort again
@@ -326,6 +395,54 @@ class Player {
     this.attack(x,y);
   }
   
+  minerva_move(){
+    let turns = 10;
+    let cand = this.candidates();
+    if (cand.length == 0){
+       print("Bad candidates!");
+       this.random_move();
+       return;
+    }
+    
+    //find best moves by greed and use topology to find local maximum
+    let sortedCand = new Array(0);
+    //test each candidate on a new board
+    for (let i=0; i<cand.length; i++){
+        let copyBoard = mainBoard.deepClone();
+        let currX = cand[i]%cols;
+        let currY = floor(cand[i]/cols);
+        copyBoard.grid[currX][currY].owner = this.clr;
+        //number of turns in playout is significant
+        let scores = this.simplePlayout(copyBoard,currX,currY,turns);
+        let score = scores[currentPlayer];
+        let currResult = new Result(currX,currY,score,scores);
+        sortedCand.push(currResult);
+    }
+    
+    //sort the candidate results by score
+    sortedCand.sort((a,b) => (this.minMax(a.scoreBoard) < this.minMax(b.scoreBoard)) ? 1 : -1);
+    
+    //now choose the top n and do the hill climbing
+    let topCount = 10;
+    let count = min(topCount,sortedCand.length);
+    let best = sortedCand.splice(0,count);
+    let firstDiff = this.minMax(best[0].scoreBoard);
+    //the length of best is deceiving because of how javascript works
+    for (let i=0; i<Object.keys(best).length; i++){
+      let copyBoard = mainBoard.deepClone();
+      let newBest = this.hillMinMax(copyBoard,best[i].x,best[i].y,best[i].score, best[i].scoreBoard, turns);
+      let diff = this.minMax(newBest.scoreBoard);
+      best[i] = newBest;
+    }
+    //sort again
+    best.sort((a,b) => (this.minMax(a.scoreBoard) < this.minMax(b.scoreBoard)) ? 1 : -1);
+    let lastDiff = this.minMax(best[0].scoreBoard);
+    
+    let improvement = lastDiff - firstDiff;
+    
+    this.attack(best[0].x, best[0].y);
+  }
+  
   move(){
    switch(this.personality){
       case AI.human:
@@ -349,6 +466,10 @@ class Player {
       
       case AI.clint:
       this.clint_move();
+      break;
+      
+      case AI.minerva:
+      this.minerva_move();
       break;
       
       default:
