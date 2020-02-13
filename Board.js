@@ -106,6 +106,8 @@ class Board{
       }
 
       //TODO resolve conflicts
+      //TODO and figure out why its different between humans and AIs
+      
       if (maxIndex > -1) {
         winners.push(players[maxIndex].clr);
       }

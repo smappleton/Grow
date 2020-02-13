@@ -180,7 +180,7 @@ function setup() {
   }
   //Ai players
   for (let i=humanCount; i<players.length; i++) {
-    players[i] = new Player(AI.minerva, aiDiff, mainBoard);
+    players[i] = new Player(AI.katie, aiDiff, mainBoard);
     mainBoard.scoreBoard[i] = 0;
   }
   
